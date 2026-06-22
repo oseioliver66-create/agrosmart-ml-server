@@ -4,7 +4,7 @@ from PIL import Image, ImageFile
 import tensorflow as tf
 import io
 import os
-import requests
+import gdown
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -16,47 +16,21 @@ GDRIVE_FILE_ID = '1fa-Esn0w3JVqZwZTzvvPKPWQsgmJamyc'
 
 def download_model():
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    print('Downloading model from Google Drive...')
-
-    def get_confirm_token(response):
-        for key, value in response.cookies.items():
-            if key.startswith('download_warning'):
-                return value
-        # Also check response content for confirmation token
-        return None
-
-    session = requests.Session()
-    url = 'https://drive.google.com/uc?export=download'
-    params = {'id': GDRIVE_FILE_ID, 'confirm': 't'}
-
-    response = session.get(url, params=params, stream=True)
-
-    # Check if we got the virus scan warning page
-    token = get_confirm_token(response)
-    if token:
-        params['confirm'] = token
-        response = session.get(url, params=params, stream=True)
-
-    total = 0
-    with open(MODEL_PATH, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=32768):
-            if chunk:
-                f.write(chunk)
-                total += len(chunk)
-
-    size_mb = total / (1024 * 1024)
+    print('Downloading model from Google Drive using gdown...')
+    url = f'https://drive.google.com/uc?id={GDRIVE_FILE_ID}'
+    gdown.download(url, MODEL_PATH, quiet=False, fuzzy=True)
+    size_mb = os.path.getsize(MODEL_PATH) / (1024 * 1024)
     print(f'Model downloaded: {size_mb:.1f} MB')
-
     if size_mb < 10:
         os.remove(MODEL_PATH)
-        raise ValueError(f'Download failed — only got {size_mb:.1f} MB. Check Google Drive sharing settings.')
+        raise ValueError(f'Download failed — only {size_mb:.1f} MB received.')
 
 if not os.path.exists(MODEL_PATH):
     download_model()
 else:
     size_mb = os.path.getsize(MODEL_PATH) / (1024 * 1024)
     if size_mb < 10:
-        print(f'Corrupted model found ({size_mb:.1f} MB), re-downloading...')
+        print(f'Corrupted model ({size_mb:.1f} MB), re-downloading...')
         os.remove(MODEL_PATH)
         download_model()
     else:
