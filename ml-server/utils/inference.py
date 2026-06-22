@@ -12,38 +12,55 @@ BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, 'model', 'best_model.h5')
 INDEX_PATH = os.path.join(BASE_DIR, 'model', 'class_indices.json')
 
-# ── Auto-download model if not present ────────────────────────────────────
 GDRIVE_FILE_ID = '1fa-Esn0w3JVqZwZTzvvPKPWQsgmJamyc'
 
 def download_model():
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     print('Downloading model from Google Drive...')
-    url = f'https://drive.google.com/uc?export=download&id={GDRIVE_FILE_ID}'
+
+    def get_confirm_token(response):
+        for key, value in response.cookies.items():
+            if key.startswith('download_warning'):
+                return value
+        # Also check response content for confirmation token
+        return None
+
     session = requests.Session()
-    response = session.get(url, stream=True)
+    url = 'https://drive.google.com/uc?export=download'
+    params = {'id': GDRIVE_FILE_ID, 'confirm': 't'}
 
-    # Handle Google Drive virus scan warning for large files
-    token = None
-    for key, value in response.cookies.items():
-        if key.startswith('download_warning'):
-            token = value
-            break
+    response = session.get(url, params=params, stream=True)
 
+    # Check if we got the virus scan warning page
+    token = get_confirm_token(response)
     if token:
-        response = session.get(url + f'&confirm={token}', stream=True)
+        params['confirm'] = token
+        response = session.get(url, params=params, stream=True)
 
+    total = 0
     with open(MODEL_PATH, 'wb') as f:
         for chunk in response.iter_content(chunk_size=32768):
             if chunk:
                 f.write(chunk)
+                total += len(chunk)
 
-    size_mb = os.path.getsize(MODEL_PATH) / (1024 * 1024)
+    size_mb = total / (1024 * 1024)
     print(f'Model downloaded: {size_mb:.1f} MB')
+
+    if size_mb < 10:
+        os.remove(MODEL_PATH)
+        raise ValueError(f'Download failed — only got {size_mb:.1f} MB. Check Google Drive sharing settings.')
 
 if not os.path.exists(MODEL_PATH):
     download_model()
 else:
-    print(f'Model found: {MODEL_PATH}')
+    size_mb = os.path.getsize(MODEL_PATH) / (1024 * 1024)
+    if size_mb < 10:
+        print(f'Corrupted model found ({size_mb:.1f} MB), re-downloading...')
+        os.remove(MODEL_PATH)
+        download_model()
+    else:
+        print(f'Model found: {MODEL_PATH} ({size_mb:.1f} MB)')
 
 print('Loading model...')
 model    = tf.keras.models.load_model(MODEL_PATH)
