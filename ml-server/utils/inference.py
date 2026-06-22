@@ -90,6 +90,19 @@ def predict_disease(image_bytes: bytes, crop_type: str) -> dict:
             best_idx   = int(np.argmax(output))
             confidence = float(output[best_idx])
 
+        # ── Confidence threshold check ─────────────────────────────────────
+        CONFIDENCE_THRESHOLD = 0.5  # Below 50% = not a recognised crop leaf
+
+        if confidence < CONFIDENCE_THRESHOLD:
+            return {
+                'disease_label': 'Unknown',
+                'disease_name':  'Unrecognised image',
+                'confidence':    round(confidence, 4),
+                'severity':      'low',
+                'crop_type':     crop_type,
+                'warning':       'This image does not appear to be a recognised crop leaf. Please upload a clear photo of a tomato, maize, or cassava leaf.',
+            }
+
         label        = idx_to_class[str(best_idx)]
         disease_name = format_disease_name(label)
         severity     = SEVERITY_MAP.get(label, 'medium')
