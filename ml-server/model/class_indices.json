@@ -1,0 +1,21 @@
+{
+  "0": "Cassava___Bacterial_Blight",
+  "1": "Cassava___Brown_Streak_Disease",
+  "2": "Cassava___Green_Mottle",
+  "3": "Cassava___Healthy",
+  "4": "Cassava___Mosaic_Disease",
+  "5": "Maize___Blight",
+  "6": "Maize___Common_Rust",
+  "7": "Maize___Gray_Leaf_Spot",
+  "8": "Maize___Healthy",
+  "9": "Tomato___Bacterial_Spot",
+  "10": "Tomato___Early_Blight",
+  "11": "Tomato___Healthy",
+  "12": "Tomato___Late_Blight",
+  "13": "Tomato___Leaf_Mold",
+  "14": "Tomato___Septoria_Leaf_Spot",
+  "15": "Tomato___Spider_Mites",
+  "16": "Tomato___Target_Spot",
+  "17": "Tomato___Tomato_Mosaic_Virus",
+  "18": "Tomato___Yellow_Leaf_Curl_Virus"
+}
