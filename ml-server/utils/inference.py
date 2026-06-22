@@ -91,7 +91,7 @@ def predict_disease(image_bytes: bytes, crop_type: str) -> dict:
             confidence = float(output[best_idx])
 
         # ── Confidence threshold check ─────────────────────────────────────
-        CONFIDENCE_THRESHOLD = 0.5  # Below 50% = not a recognised crop leaf
+        CONFIDENCE_THRESHOLD = 0.3  # Lower threshold — 30% is sufficient for crop leaves
 
         if confidence < CONFIDENCE_THRESHOLD:
             return {
