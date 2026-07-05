@@ -1,5 +1,4 @@
-﻿model/best_model.h5
-model/agrosmart_model.tflite
+﻿model/
 __pycache__/
 *.pyc
 .env
