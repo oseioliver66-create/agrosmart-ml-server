@@ -1,0 +1,7 @@
+model/*
+!model/onnx/
+!model/onnx/*.onnx
+!model/onnx/*.json
+__pycache__/
+*.pyc
+.env
